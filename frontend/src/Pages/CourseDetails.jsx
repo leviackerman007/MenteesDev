@@ -1,12 +1,25 @@
 import React, { useEffect, useState } from "react";
 import generatePdf from "../utils/genrateCoursePdf";
-import { useParams } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
+import SEOHead from "../seo/SEOHead";
+import { useDynamicSEO } from "../seo/useDynamicSEO";
 import QueryForm from "../Components/Forms/QueryForm";
 import Loading from "../Components/Helpers/Loading";
 import { useCourse } from "../api/courseApi";
 
 function CourseDetails() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
+  const handleEnrollClick = () => {
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: location.pathname } });
+    } else {
+      setShowQuery(true);
+    }
+  };
 
 
   const { fetchCourse } = useCourse();
@@ -27,15 +40,13 @@ function CourseDetails() {
     fetchCourseDetails();
   }, [courseId]);
 
-  if (!course) return <Loading />;
+  const seoProps = useDynamicSEO('course', course);
 
+  if (!course) return <Loading />;
 
   return (
     <div className="bg-dark-background pb-10 overflow-x-hidden">
-      <Helmet>
-        <title>Course Details - Codementees</title>
-        <meta name="description" content={`Explore details about Course ${courseId} at Codementees.`} />
-      </Helmet>
+      <SEOHead path="/courses/:courseId" {...seoProps} />
       {showQuery && <QueryForm setQuery={setShowQuery} courseName={course.name} />}
 
       <div className="flex flex-col lg:flex-row gap-6 p-6 lg:p-12 mx-auto max-w-6xl bg-dark-background">
@@ -48,7 +59,7 @@ function CourseDetails() {
           </p>
 
           <button
-            onClick={() => setShowQuery(true)}
+            onClick={handleEnrollClick}
             className="mt-6 text-white border-2 border-blue-900 shadow-md hover:bg-blue-900 transition-all duration-300 font-medium rounded-full text-sm px-5 py-2.5"
           >
             Enroll Now
@@ -72,8 +83,9 @@ function CourseDetails() {
         {/* Right Section */}
         <div className="mx-6 px-6 py-10 lg:w-1/3 text-center bg-gray-800 rounded-lg border-2 border-dark-btn shadow-lg">
           <p className="text-gray-400 text-lg text-left">Starting from</p>
-          <div className="flex items-baseline mt-2">
-            <span className="mr-2 text-3xl font-extrabold text-white">₹5000</span>
+          <div className="flex items-baseline flex-wrap mt-2">
+            <span className="mr-2 text-xl line-through text-gray-400">₹2500/month</span>
+            <span className="mr-2 text-3xl font-extrabold text-white">₹1599</span>
             <span className="text-blue-400">/month</span>
           </div>
 
@@ -94,7 +106,7 @@ function CourseDetails() {
           </ul>
 
           <button
-            onClick={() => setShowQuery(true)}
+            onClick={handleEnrollClick}
             className="text-white bg-blue-900 hover:bg-dark-background transition-all duration-300 font-medium rounded-full text-sm px-6 py-3"
           >
             Enroll Course
@@ -141,8 +153,8 @@ function CourseDetails() {
                       key={idx}
                       className="p-4 bg-gray-800 rounded-lg transition-all duration-300 hover:bg-gray-700"
                     >
-                      <strong>{item.title}</strong>
-                      <p className="text-sm text-gray-300">{item.description}</p>
+                      <strong className="text-blue-400 block mb-1">{item.title}</strong>
+                      <p className="text-sm text-gray-400">{item.description}</p>
                     </li>
                   ))}
                 </ul>

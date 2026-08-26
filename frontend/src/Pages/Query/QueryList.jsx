@@ -3,19 +3,20 @@ import { Link } from "react-router-dom"
 import ReusableTable from '../../Components/Table/Table';
 import { useQueryAPI } from '../../api/queryApi';
 import Pagination from "../../Components/UI/Pagination"
+import { initFlowbite } from 'flowbite';
 function QueryList() {
-    
-    const {fetchQueries, deleteQuery} = useQueryAPI()
+
+    const { fetchQueries, deleteQuery } = useQueryAPI()
     const [Queries, setQueries] = useState([]);
-    const [currentPage , setCurrentPage] =  useState(1);
+    const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(10)
 
-    const handleDelete = async(id) => {
+    const handleDelete = async (id) => {
         deleteQuery(id);
         await fetchData(currentPage)
     };
 
-    const headers = ['name', 'email', 'Date', 'courseName'];
+    const headers = ['name', 'email', 'phoneNumber', 'courseName', 'message', 'date'];
     const actions = [
         { label: 'Show', handler: (id) => console.log(`Show item with ID: ${id}`) },
         { label: 'Edit', handler: (id) => console.log(`Edit item with ID: ${id}`) },
@@ -39,11 +40,8 @@ function QueryList() {
     }, [Queries]);
 
     return (
-        <div className="mx-auto max-w-screen-xl px-2 py-10">
-            <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
-                <div className="mx-auto max-w-screen-xl px-4 lg:px-12">
-                    {/* Start coding here */}
-                    <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
+        <div className="p-6 lg:p-8 w-full max-w-[1600px] mx-auto">
+            <div className="relative shadow-lg sm:rounded-2xl overflow-hidden border" style={{ backgroundColor: "rgb(var(--dash-panel))", borderColor: "rgba(var(--dash-border))" }}>
                         <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
                             <div className="w-full md:w-1/2">
                                 <form className="flex items-center">
@@ -272,10 +270,8 @@ function QueryList() {
                                 isLoading={false}
                             />
                         </div>
-                        <Pagination totalPages={totalPages} currentPage={currentPage} onPageChange={setCurrentPage}/>
-                    </div>
-                </div>
-            </section>
+                        <Pagination totalPages={totalPages} currentPage={currentPage} onPageChange={setCurrentPage} />
+            </div>
         </div>
     )
 }

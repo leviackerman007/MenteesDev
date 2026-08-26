@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 const courseSchema = new mongoose.Schema({
   name: { type: String, required: true },
   image: { type: String, required: true },
-  price :{type : Number, default:500},
-  features:{type : [String],default:["Hello"]},
+  price: { type: Number, default: 500 },
+  features: { type: [String], default: ["Hello"] },
   tags: {
     type: [String],
     enum: ["Online", "Live", "Classroom"],
@@ -24,26 +24,37 @@ const courseSchema = new mongoose.Schema({
   ],
   details: [
     {
-      id: mongoose.Schema.Types.ObjectId,
+      id: {
+        type: String,
+        required: false,
+      },
       label: {
         type: String,
-        required: true,
+        required: false,
       },
       content: [
         {
           title: {
             type: String,
-            required: true,
+            required: false,
           },
           description: {
             type: String,
-            required: true,
+            required: false,
           },
         },
       ],
     },
   ],
+  seo: {
+    metaTitle: { type: String },
+    metaDescription: { type: String },
+    keywords: { type: String }
+  }
 });
+
+courseSchema.index({ name: 1 });
+courseSchema.index({ category: 1 });
 
 const Course = mongoose.model("Course", courseSchema);
 

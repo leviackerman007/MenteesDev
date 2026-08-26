@@ -44,20 +44,33 @@ import mongoose from "mongoose";
  *         description: Invalid input data
  */
 const createCourse = asyncHandler(async (req, res) => {
-  const { name, image, category, description, module, price } = req.body;
+  const { name, category, description, modules, details, tags, price, seo } = req.body;
+  let image = req.file ? req.file.path : req.body.image;
 
-  if (!name || !category) {
-    res.status(400);
-    throw new Error("Name and category are required");
+  // Defensive check for image field
+  if (image && typeof image === 'object' && Object.keys(image).length === 0) {
+    image = "";
   }
+
+  if (!name || !category || !image) {
+    res.status(400);
+    throw new Error("Name, category, and image are required");
+  }
+
+  const modulesParsed = typeof modules === 'string' ? JSON.parse(modules) : modules;
+  const detailsParsed = typeof details === 'string' ? JSON.parse(details) : details;
+  const tagsParsed = typeof tags === 'string' ? JSON.parse(tags) : tags;
 
   const course = new Course({
     name,
     image,
     category,
     description,
-    module,
+    modules: modulesParsed,
+    details: detailsParsed,
+    tags: tagsParsed,
     price,
+    seo: typeof seo === 'string' ? JSON.parse(seo) : seo,
   });
 
   const createdCourse = await course.save();
@@ -195,11 +208,14 @@ const updateCourse = asyncHandler(async (req, res) => {
   }
 
   course.name = req.body.name || course.name;
-  course.image = req.body.image || course.image;
+  course.image = req.file ? req.file.path : (req.body.image || course.image);
   course.category = req.body.category || course.category;
   course.description = req.body.description || course.description;
-  course.module = req.body.module || course.module;
+  course.modules = req.body.modules ? (typeof req.body.modules === 'string' ? JSON.parse(req.body.modules) : req.body.modules) : course.modules;
+  course.details = req.body.details ? (typeof req.body.details === 'string' ? JSON.parse(req.body.details) : req.body.details) : course.details;
+  course.tags = req.body.tags ? (typeof req.body.tags === 'string' ? JSON.parse(req.body.tags) : req.body.tags) : course.tags;
   course.price = req.body.price || course.price;
+  if (req.body.seo) course.seo = typeof req.body.seo === 'string' ? JSON.parse(req.body.seo) : req.body.seo;
 
   const updatedCourse = await course.save();
   res.json({ data: updatedCourse, message: "Course updated successfully" });
@@ -224,14 +240,18 @@ const updateCourse = asyncHandler(async (req, res) => {
  *         description: Course not found
  */
 const deleteCourse = asyncHandler(async (req, res) => {
-  const course = await Course.findById(req.params.id);
-  if (!course) {
-    res.status(404).json({ data: null, message: "Course not found" });
-    return;
-  }
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found" });
+    }
 
-  await course.deleteOne();
-  res.json({ data: null, message: "Course deleted successfully" });
+    await course.deleteOne();
+    res.status(200).json({ success: true, message: "Course deleted successfully" });
+  } catch (error) {
+    console.error("Delete course error:", error);
+    res.status(500).json({ success: false, message: error.message || "Failed to delete course" });
+  }
 });
 
 /**
@@ -279,7 +299,7 @@ const updateCourseDetails = asyncHandler(async (req, res) => {
     return;
   }
 
-  res.status(200).json(updatedCourse);
+  res.status(200).json({ success: true, data: updatedCourse, message: "Course details updated successfully" });
 });
 
 /**
@@ -308,6 +328,14 @@ const getCoursesByCategory = asyncHandler(async (req, res) => {
 
   res.json({ data: courses, message: "Courses fetched successfully" });
 });
+const bulkDeleteCourses = asyncHandler(async (req, res) => {
+  const { ids } = req.body;
+  if (!ids || !Array.isArray(ids)) {
+    return res.status(400).json({ message: "Invalid payload" });
+  }
+  await Course.deleteMany({ _id: { $in: ids } });
+  res.json({ message: "Courses deleted successfully" });
+});
 
 export {
   createCourse,
@@ -317,4 +345,5 @@ export {
   deleteCourse,
   updateCourseDetails,
   getCoursesByCategory,
+  bulkDeleteCourses,
 };

@@ -9,37 +9,15 @@ import RatingSection from "../Components/RatingSection/RatingSection";
 import { useCategoryAPI } from "../api/categoryApi";
 import { setCategory } from "../Slices/categorySlice";
 import { useDispatch, useSelector } from "react-redux";
-import Loading from "../Components/Helpers/Loading";
-import WorkshopSection from "../Components/WorkshopSection/WorkshopSection";
+import UpcomingEvents from "../Components/Event/UpcomingEvents";
 
 function Home() {
-
-  <Helmet>
-    <title>Codementees - Learn Coding with Experts</title>
-    <meta name="description" content="Master web development, AI, and programming with expert-led courses on Codementees." />
-    <meta property="og:title" content="Codementees - Learn Coding with Experts" />
-    <meta property="og:description" content="Master web development, AI, and programming with expert-led courses on Codementees." />
-    <meta property="og:image" content="https://codementees.com/images/home.jpg" />
-    <meta property="og:url" content="https://codementees.com/" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Codementees - Learn Coding with Experts" />
-    <meta name="twitter:description" content="Master web development, AI, and programming with expert-led courses on Codementees." />
-    <meta name="twitter:image" content="https://codementees.com/images/twitter-home.jpg" />
-  </Helmet>
-
-
-
   const { fetchCategories } = useCategoryAPI();
   const categoryData = useSelector((state) => state.category);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    // Set Page Title & Meta Description for SEO
-    document.title = "Codementees | Learn Coding with Experts";
-    document
-      .querySelector('meta[name="description"]')
-      ?.setAttribute("content", "Master web development, AI, and programming with expert-led courses at Codementees.");
 
+  useEffect(() => {
     // Fetch category data
     const fetchData = async () => {
       const data = await fetchCategories();
@@ -49,18 +27,31 @@ function Home() {
     fetchData();
   }, [dispatch]);
 
-  if (!categoryData) return <Loading />;
+
 
   return (
-    <main className="bg-dark-background pb-10 overflow-x-hidden">
+    <main className="overflow-x-hidden" style={{ background: "#000005" }}>
       {/* JSON-LD Structured Data for SEO */}
       <script type="application/ld+json">
         {JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "EducationalOrganization",
-          "name": "Codementees",
+          "@type": ["EducationalOrganization", "Organization"],
+          "name": "CodeMentees",
           "url": "https://codementees.com/",
-          "description": "Learn coding from expert mentors. Get top programming courses in web development, AI, and more.",
+          "logo": "https://codementees.com/logo.png",
+          "description": "Live 1:1 mentorship in Web Development, DSA & Interview Prep from engineers who've worked at JPMorgan and Freecharge. Build real, hireable skills — not just certificates.",
+          "foundingDate": "2023",
+          "areaServed": "Worldwide",
+          "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "IN"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "100",
+            "bestRating": "5"
+          },
           "sameAs": [
             "https://www.facebook.com/codementees",
             "https://twitter.com/codementees",
@@ -70,10 +61,10 @@ function Home() {
       </script>
 
       <Carousel />
-      <WhyCodeMentees />
+      <UpcomingEvents />
       <CourseSection />
       <Learning />
-      <WorkshopSection />
+      <WhyCodeMentees />
       <BlogGridFour />
       <RatingSection />
     </main>

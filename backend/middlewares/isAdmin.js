@@ -17,9 +17,9 @@ const isAdmin = async (req, res, next) => {
       });
     }
 
-    if(!decode.isAdmin){
+    if (!decode.isAdmin) {
       return res.status(401).json({
-        message: "User is not admin",
+        message: "User is not authorized as an admin",
         success: false,
       });
     }
@@ -27,6 +27,7 @@ const isAdmin = async (req, res, next) => {
     next();
   } catch (error) {
     console.log(error);
+    next(error);
   }
 };
 

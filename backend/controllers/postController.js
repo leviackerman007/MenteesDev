@@ -39,13 +39,13 @@ import asyncHandler from "express-async-handler";
  */
 const createPost = asyncHandler(async (req, res) => {
   try {
-    const { title, content, image, categories } = req.body;
+    const { title, content, image, categories, seo } = req.body;
 
     if (!title || !content) {
       return res.status(400).json({ message: "Title and content are required" });
     }
 
-    const post = new Post({ title, content, image, categories });
+    const post = new Post({ title, content, image, categories, seo });
     const createdPost = await post.save();
 
     res.status(201).json({ data: createdPost, message: "Post created successfully" });
@@ -106,7 +106,7 @@ const deletePost = asyncHandler(async (req, res) => {
  */
 const getPost = asyncHandler(async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id).populate("comments.user", "name email");
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
@@ -163,6 +163,7 @@ const updatePost = asyncHandler(async (req, res) => {
     post.content = req.body.content || post.content;
     post.image = req.body.image || post.image;
     post.categories = req.body.categories || post.categories;
+    if (req.body.seo) post.seo = req.body.seo;
 
     const updatedPost = await post.save();
     res.json({ data: updatedPost, message: "Post updated successfully" });
@@ -194,17 +195,23 @@ const updatePost = asyncHandler(async (req, res) => {
  */
 const getPosts = asyncHandler(async (req, res) => {
   try {
-    let { page = 1, limit = 10 } = req.query;
+    let { page = 1, limit = 10, category } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
     const skip = (page - 1) * limit;
 
-    const posts = await Post.find()
+    const query = {};
+    if (category) {
+      query.categories = category;
+    }
+
+    const posts = await Post.find(query)
       .sort({ createdAt: -1 }) // Sort by newest posts
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .populate("comments.user", "name email");
 
-    const totalPosts = await Post.countDocuments(); // Total post count for pagination info
+    const totalPosts = await Post.countDocuments(query); // Total post count for pagination info
 
     res.json({
       data: posts,
@@ -218,4 +225,83 @@ const getPosts = asyncHandler(async (req, res) => {
   }
 });
 
-export { createPost, deletePost, getPost, getPosts, updatePost };
+const likePost = asyncHandler(async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.likes.includes(req.userId)) {
+      post.likes = post.likes.filter((id) => id.toString() !== req.userId.toString());
+    } else {
+      post.likes.push(req.userId);
+    }
+
+    await post.save();
+    res.json({ message: "Post liked/unliked successfully", data: post.likes });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+const addComment = asyncHandler(async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) {
+      return res.status(400).json({ message: "Comment text is required" });
+    }
+
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const comment = {
+      user: req.userId,
+      text,
+    };
+
+    post.comments.push(comment);
+    await post.save();
+
+    await post.populate("comments.user", "name email");
+    res.status(201).json({ message: "Comment added successfully", data: post.comments });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+const deleteComment = asyncHandler(async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Admins are naturally authorized to delete any comment. Check handled by isAdmin middleware.
+
+    post.comments.pull(req.params.commentId);
+    await post.save();
+
+    res.json({ message: "Comment deleted successfully", data: post.comments });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+const bulkDeletePosts = asyncHandler(async (req, res) => {
+  const { ids } = req.body;
+  if (!ids || !Array.isArray(ids)) {
+    return res.status(400).json({ message: "Invalid payload" });
+  }
+  await Post.deleteMany({ _id: { $in: ids } });
+  res.json({ message: "Posts deleted successfully" });
+});
+
+export { createPost, deletePost, getPost, getPosts, updatePost, likePost, addComment, deleteComment, bulkDeletePosts };

@@ -75,13 +75,18 @@ const deleteUser = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Soft delete: set "isActive" to false
-    user.isActive = false;
-    await user.save();
+    // Protection: Prevent admin from deleting themselves
+    if (req.userId && req.userId.toString() === user._id.toString()) {
+      return res.status(400).json({ message: "Action denied: You cannot delete your own admin account." });
+    }
 
-    res.json({ message: "User deactivated successfully" });
+    // Hard delete: remove user from database
+    await User.findByIdAndDelete(req.params.id);
+
+    res.json({ message: `User ${user.name} deleted permanently` });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("Delete Error:", error);
+    res.status(400).json({ message: error.message || "An error occurred while deleting the user" });
   }
 });
 
@@ -119,6 +124,9 @@ const updateUser = asyncHandler(async (req, res) => {
     // Update fields if provided
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
+    if (req.body.isFullAccess !== undefined) {
+      user.isFullAccess = req.body.isFullAccess;
+    }
 
     // Hash new password if provided
     if (req.body.password) {
@@ -146,12 +154,12 @@ const getUsers = asyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
 
     // Exclude passwords from response
-    const users = await User.find()
+    const users = await User.find({})
       .select("-password")
       .skip(skip)
       .limit(limit);
 
-    const totalUsers = await User.countDocuments();
+    const totalUsers = await User.countDocuments({});
 
     res.json({
       data: users,
@@ -165,4 +173,80 @@ const getUsers = asyncHandler(async (req, res) => {
   }
 });
 
-export { createUser, deleteUser, getUser, getUsers, updateUser };
+/**
+ * @swagger
+ * /api/users/bulk:
+ *   post:
+ *     summary: Bulk delete users
+ *     tags: [Users]
+ */
+const bulkDeleteUsers = asyncHandler(async (req, res) => {
+  const { ids } = req.body;
+  if (!ids || !Array.isArray(ids)) {
+    return res.status(400).json({ message: "No user IDs provided" });
+  }
+
+  // Prevent deleting self if admin
+  if (req.userId && ids.includes(req.userId.toString())) {
+    return res.status(400).json({ message: "Action denied: You cannot delete your own admin account in bulk." });
+  }
+
+  try {
+    await User.deleteMany({ _id: { $in: ids } });
+    res.status(200).json({ success: true, message: "Users deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Failed to delete users" });
+  }
+});
+
+/**
+ * @swagger
+ * /api/users/growth:
+ *   get:
+ *     summary: Get user growth over the last 7 days
+ *     tags: [Users]
+ */
+const getUserGrowth = asyncHandler(async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(today.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const users = await User.find({
+      createdAt: { $gte: sevenDaysAgo, $lte: today },
+    }).select("createdAt");
+
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const growthData = {};
+
+    // Initialize array of last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+      const dayName = days[d.getDay()];
+      growthData[dayName] = 0;
+    }
+
+    // Populate data
+    users.forEach((user) => {
+      const d = new Date(user.createdAt);
+      const dayName = days[d.getDay()];
+      if (growthData[dayName] !== undefined) {
+        growthData[dayName]++;
+      }
+    });
+
+    const result = Object.keys(growthData).map(key => ({
+      name: key,
+      users: growthData[key],
+    }));
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+export { createUser, deleteUser, getUser, getUsers, updateUser, bulkDeleteUsers, getUserGrowth };

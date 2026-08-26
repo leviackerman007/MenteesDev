@@ -2,12 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { login, logout } from "../Slices/authSlice";
 import { GoogleLogin } from "@react-oauth/google";
-import { Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import Toast from "../Components/UI/Toast";
 
 import { useAuth } from "../api/authApi";
 
 function LoginPage() {
   const { loginUser } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const [toast, setToast] = useState({
     visible: false,
@@ -16,24 +19,35 @@ function LoginPage() {
   });
   const auth = useSelector((state) => state.auth.isAuthenticated);
 
+  const from = location.state?.from || "/";
+
   useEffect(() => {
     if (auth) {
-      window.location.href = "/";
+      navigate(from, { replace: true });
     }
-  }, [auth]);
+  }, [auth, navigate, from]);
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    remember_me: false,
     credential: null,
     client_id: null,
   });
 
   const handleFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: type === 'checkbox' ? checked : value,
     });
+  };
+
+  const showToast = (message, type = "success") => {
+    setToast({ visible: true, message, type });
+    setTimeout(() => {
+      setToast({ visible: false, message: "", type: "success" });
+    }, 3000);
   };
 
   const handleLoginSubmit = async (googleResponse = null) => {
@@ -44,17 +58,33 @@ function LoginPage() {
         client_id: googleResponse.clientId,
       }),
     };
-    const userData = await loginUser(updatedFormData)
-    if(userData){
-      localStorage.setItem("token", userData.token);
+    try {
+      const userData = await loginUser(updatedFormData);
+      if (userData) {
+        localStorage.setItem("token", userData.token);
         dispatch(login(userData));
-        setToast({ visible: true, message: data.message, type: "success" });
+        showToast(userData.message || "Logged in successfully!", "success");
         setTimeout(() => {
-          setToast({ visible: false, message: "", type: "success" });
-        }, 5000);
-    }
-    else{
-      alert("Error : User could not login")
+          navigate(from, { replace: true });
+        }, 2000);
+      } else {
+        showToast("Invalid credentials or login failed.", "error");
+      }
+    } catch (error) {
+      console.error("Login Error:", error);
+      const errorMessage = error.message || "";
+      if (errorMessage.includes("User not Signed Up")) {
+        showToast("User not found. Please sign up first.", "error");
+      } else {
+        showToast(errorMessage || "An error occurred during login.", "error");
+      }
+      
+      // Handle the case where the user needs verification (from error message or special flag)
+      if (error.response && error.response.status === 401 && error.response.data && error.response.data.needsVerification) {
+         setTimeout(() => {
+           navigate("/verify-otp", { state: { email: error.response.data.email } });
+         }, 2000);
+      }
     }
   };
 
@@ -63,24 +93,11 @@ function LoginPage() {
       <div className="min-h-screen bg-dark-background flex flex-col justify-center py-8 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           {toast.visible && (
-            <div
-              className={`fixed z-50 top-5 right-5 inline-flex items-center p-4 space-x-2 text-sm font-medium text-green-500 bg-green-100 rounded-lg ${
-                toast.type === "error"
-                  ? "text-red-500 bg-red-100"
-                  : "text-green-500 bg-green-100"
-              }`}
-            >
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
-              </svg>
-              <span>{toast.message}</span>
-            </div>
+            <Toast
+              message={toast.message}
+              type={toast.type}
+              visible={toast.visible}
+            />
           )}
           <h2 className="mt-6 text-center text-3xl font-extrabold text-dark-h">
             Sign in to your account
@@ -143,6 +160,8 @@ function LoginPage() {
                     id="remember_me"
                     name="remember_me"
                     type="checkbox"
+                    checked={formData.remember_me}
+                    onChange={handleFormChange}
                     className="h-4 w-4 text-dark-btn border-gray-300 rounded"
                   />
                   <label
@@ -153,12 +172,12 @@ function LoginPage() {
                   </label>
                 </div>
                 <div className="text-sm">
-                  <a
-                    href="#"
+                  <Link
+                    to="/forgot-password"
                     className="font-medium text-dark-btn hover:underline"
                   >
                     Forgot your password?
-                  </a>
+                  </Link>
                 </div>
               </div>
               <div>
@@ -174,7 +193,6 @@ function LoginPage() {
             <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  {/* <div className="w-full border-t border-gray-300" /> */}
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-transparent text-gray-400">
