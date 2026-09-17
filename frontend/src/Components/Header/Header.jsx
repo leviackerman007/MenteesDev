@@ -85,7 +85,6 @@ function Header() {
                 src="/logo/primary-logo.svg"
                 alt="CodeMentees Logo"
                 className="h-8 w-auto"
-                style={{ filter: "brightness(0) invert(1)" }}
               />
               <span style={{ fontFamily: "Playwrite IT Moderna, cursive", color: "#CD0094" }}>
                 Codementees

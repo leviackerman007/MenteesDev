@@ -151,7 +151,6 @@ function DashboardLayout() {
               src="/logo/primary-logo.svg"
               alt="CodeMentees Logo"
               className="h-7 w-auto"
-              style={{ filter: "brightness(0) invert(1)" }}
             />
             <span className="dashboard-brand text-white text-base hover:text-pink-500 transition-colors">
               Admin Panel

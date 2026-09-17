@@ -61,7 +61,6 @@ export default function SplashScreen({ onDone }) {
           style={{
             height: 32,
             width: "auto",
-            filter: "brightness(0) invert(1)",
           }}
         />
         <span style={{
