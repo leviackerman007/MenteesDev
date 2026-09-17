@@ -81,12 +81,11 @@ function Header() {
 
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 text-xl font-black tracking-tight">
-              <span
-                className="w-7 h-7 rounded-md flex items-center justify-center text-white text-sm font-black"
-                style={{ background: "rgb(var(--accent))" }}
-              >
-                C
-              </span>
+              <img
+                src="/logo/primary-logo.svg"
+                alt="CodeMentees Logo"
+                className="h-8 w-auto"
+              />
               <span style={{ fontFamily: "Playwrite IT Moderna, cursive", color: "#CD0094" }}>
                 Codementees
               </span>

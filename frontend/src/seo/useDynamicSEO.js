@@ -112,7 +112,7 @@ export function useDynamicSEO(type, data) {
               name: SITE_NAME,
               logo: {
                 '@type': 'ImageObject',
-                url: `${SITE_URL}/logo.png`,
+                url: `${SITE_URL}/logo/primary-logo.svg`,
               },
             },
             mainEntityOfPage: {

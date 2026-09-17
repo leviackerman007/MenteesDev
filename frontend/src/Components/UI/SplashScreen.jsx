@@ -55,14 +55,14 @@ export default function SplashScreen({ onDone }) {
           zIndex: 10000,
         }}
       >
-        <span style={{
-          width: 28, height: 28,
-          borderRadius: 8,
-          background: "linear-gradient(135deg, #7c3aed, #a78bfa)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          color: "white", fontSize: 14, fontWeight: 900,
-          boxShadow: "0 0 20px rgba(167,139,250,0.5)",
-        }}>C</span>
+        <img
+          src="/logo/primary-logo.svg"
+          alt="CodeMentees"
+          style={{
+            height: 32,
+            width: "auto",
+          }}
+        />
         <span style={{
           fontFamily: "Playwrite IT Moderna, cursive",
           color: "#CD0094",

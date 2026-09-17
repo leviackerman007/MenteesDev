@@ -94,6 +94,11 @@ function Footer() {
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-2 pr-4">
             <Link to="/" className="flex items-center gap-2 mb-4">
+              <img
+                src="/logo/primary-logo.svg"
+                alt="CodeMentees Logo"
+                className="h-9 w-auto"
+              />
               <span className="text-xl font-black tracking-tight">
                 <span className="text-white">Code</span>
                 <span className="bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text text-transparent">Mentees</span>

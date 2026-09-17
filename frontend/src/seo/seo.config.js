@@ -46,7 +46,7 @@ export const SEO_ROUTES = [
       "@type": ["EducationalOrganization", "Organization"],
       "name": "CodeMentees",
       "url": "https://codementees.com/",
-      "logo": "https://codementees.com/logo.png",
+      "logo": "https://codementees.com/logo/primary-logo.svg",
       "description": "Live 1:1 mentorship in Web Development, DSA & Interview Prep from engineers who've worked at JPMorgan and Freecharge. Build real, hireable skills — not just certificates.",
       "foundingDate": "2023",
       "areaServed": "Worldwide",
@@ -101,7 +101,7 @@ export const SEO_ROUTES = [
       "@type": ["EducationalOrganization", "Organization"],
       "name": "CodeMentees",
       "url": "https://codementees.com/",
-      "logo": "https://codementees.com/logo.png",
+      "logo": "https://codementees.com/logo/primary-logo.svg",
       "description": "CodeMentees connects early-career developers with mentors from JPMorgan and Freecharge. Build real, hireable skills — not just certificates."
     },
     changefreq: 'monthly',

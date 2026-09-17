@@ -11,7 +11,7 @@ const organizationJsonLd = {
   url: SITE_URL,
   description:
     "CodeMentees connects self-taught and early-career developers with experienced mentors to build real, hireable skills — not just certificates.",
-  logo: `${SITE_URL}/logo.png`,
+  logo: `${SITE_URL}/logo/primary-logo.svg`,
   contactPoint: {
     "@type": "ContactPoint",
     telephone: "+91 6396934224",

@@ -147,12 +147,11 @@ function DashboardLayout() {
           style={{ borderColor: "rgba(var(--dash-border))" }}
         >
           <Link to="/" className="flex items-center gap-2">
-            <span
-              className="w-7 h-7 rounded-md flex items-center justify-center text-white text-sm font-black"
-              style={{ background: "rgb(var(--accent))" }}
-            >
-              C
-            </span>
+            <img
+              src="/logo/primary-logo.svg"
+              alt="CodeMentees Logo"
+              className="h-7 w-auto"
+            />
             <span className="dashboard-brand text-white text-base hover:text-pink-500 transition-colors">
               Admin Panel
             </span>
