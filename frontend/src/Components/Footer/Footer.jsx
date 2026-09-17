@@ -98,6 +98,7 @@ function Footer() {
                 src="/logo/primary-logo.svg"
                 alt="CodeMentees Logo"
                 className="h-9 w-auto"
+                style={{ filter: "brightness(0) invert(1)" }}
               />
               <span className="text-xl font-black tracking-tight">
                 <span className="text-white">Code</span>
