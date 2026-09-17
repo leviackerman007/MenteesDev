@@ -80,14 +80,20 @@ function Header() {
           <div className="flex items-center justify-between mx-auto max-w-screen-xl">
 
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 text-xl font-black tracking-tight">
+            <Link to="/" className="flex items-center gap-2">
               <img
                 src="/logo/primary-logo.svg"
                 alt="CodeMentees Logo"
                 className="h-8 w-auto"
               />
-              <span style={{ fontFamily: "Playwrite IT Moderna, cursive", color: "#CD0094" }}>
-                Codementees
+              <span className="text-xl font-black tracking-tight leading-none">
+                <span className="text-white">Code</span><span
+                  style={{
+                    background: "linear-gradient(90deg, #f97316, #ec4899)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >Mentees</span>
               </span>
             </Link>
 

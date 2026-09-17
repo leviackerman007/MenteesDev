@@ -64,20 +64,20 @@ export default function SplashScreen({ onDone }) {
           }}
         />
         <span style={{
-          fontFamily: "Playwrite IT Moderna, cursive",
-          color: "#CD0094",
-          fontSize: 20,
+          fontSize: 22,
           fontWeight: 900,
+          letterSpacing: "-0.5px",
+          lineHeight: 1,
           opacity: phase === "center" ? 1 : 0,
           transition: "opacity 0.3s ease",
         }}>
-          Codementees
+          <span style={{ color: "#ffffff" }}>Code</span><span style={{
+            background: "linear-gradient(90deg, #f97316, #ec4899)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}>Mentees</span>
         </span>
       </div>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playwrite+IT+Moderna:wght@100..400&display=swap');
-      `}</style>
     </div>
   );
 }
